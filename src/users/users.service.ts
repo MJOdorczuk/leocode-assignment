@@ -8,17 +8,19 @@ export class UsersService {
   private readonly users = [
     {
       userId: 1,
-      username: 'john',
+      email: 'john@jhn.jn',
       password: 'changeme',
+      pubKey: null,
     },
     {
       userId: 2,
-      username: 'maria',
+      email: 'example@mail.com',
       password: 'guess',
+      pubKey: null,
     },
   ];
 
-  async findOne(username: string): Promise<User | undefined> {
-    return this.users.find(user => user.username === username);
+  async findOne(email: string): Promise<User | undefined> {
+    return this.users.find(user => user.email === email);
   }
 }
