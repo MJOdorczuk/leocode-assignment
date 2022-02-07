@@ -1,5 +1,5 @@
 import { UnauthorizedException } from '@nestjs/common';
-import { JwtModule, JwtService } from '@nestjs/jwt';
+import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersService } from '../users/users.service';
 import { AuthService } from './auth.service';
@@ -17,13 +17,6 @@ const fakeUser = {
   password: Math.random().toString(36).slice(2)
 }
 
-AuthService.prototype.validateUser = async (email: string, pass: string) => {
-  if(email === realUser.email && pass === realUser.password){
-    return {email: realUser.email, aux: realUser.aux};
-  }
-  return null;
-}
-
 let authService: AuthService;
 
 describe('LocalStrategy', () => {
@@ -31,11 +24,17 @@ describe('LocalStrategy', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [LocalStrategy, AuthService, UsersService, JwtService],
+      providers: [LocalStrategy, AuthService, {provide: UsersService, useValue: new UsersService()}, JwtService],
     }).compile();
 
     service = module.get<LocalStrategy>(LocalStrategy);
     authService = module.get<AuthService>(AuthService);
+    jest.spyOn(authService, "validateUser").mockImplementation(async (email: string, pass: string) => {
+      if(email === realUser.email && pass === realUser.password){
+        return {email: realUser.email, aux: realUser.aux};
+      }
+      return null;
+    });
   });
 
   it('should be defined', () => {

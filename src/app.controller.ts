@@ -10,13 +10,13 @@ export class AppController {
 
   @UseGuards(LocalAuthGuard)
   @Post('api/sign-in')
-  async sign_in(@Request() req) {
+  async signIn(@Request() req) {
     return this.authService.login(req.user);
   }
 
-  // @UseGuards(JwtAuthGuard)
-  // @Get('profile')
-  // getProfile(@Request() req) {
-  //   return req.user;
-  // }
+  @UseGuards(JwtAuthGuard)
+  @Post('api/generate-key-pair')
+  generateKeyPair(@Request() req) {
+    return this.authService.generateKeyPair(req.user);
+  }
 }
