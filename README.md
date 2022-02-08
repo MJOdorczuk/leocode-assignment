@@ -47,8 +47,8 @@ $ npm run start:prod
 
 ## Users
 
-email: 'john@jhn.jn', password: 'changeme'
-email: 'example@mail.com', password: 'guess'
+ - email: 'john@jhn.jn', password: 'changeme'
+ - email: 'example@mail.com', password: 'guess'
 
 ## Test
 
