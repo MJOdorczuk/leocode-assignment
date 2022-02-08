@@ -41,16 +41,16 @@ export class EncryptService {
   async encryptFile(file: string, email: string){
     const content = Buffer.from(readFileSync(file, "base64"), "base64");
     const user = await this.usersService.findOne(email);
-    if(user){
-      var chunks = [], i = 0, n = content.length;
-      while (i < n) {
-        // 2048 bits and string is base64 therefore chunks should be 32
-        chunks.push(content.slice(i, i += 32));
-      }
-      return chunks
-        .map(chunk => publicEncrypt({key: user.pubKey, padding: RSA_PKCS1_PADDING}, chunk).toString("base64"))
-        .join();
+    if(!user || !user.pubKey){
+      return null;
     }
-    return null;
+    var chunks = [], i = 0, n = content.length;
+    while (i < n) {
+      // 2048 bits and string is base64 therefore chunks should be 32
+      chunks.push(content.slice(i, i += 32));
+    }
+    return chunks
+      .map(chunk => publicEncrypt({key: user.pubKey, padding: RSA_PKCS1_PADDING}, chunk).toString("base64"))
+      .join();
   }
 }
