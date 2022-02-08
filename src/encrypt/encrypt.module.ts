@@ -8,4 +8,4 @@ import { EncryptService } from './encrypt.service';
   providers: [EncryptService],
   exports: [EncryptService],
 })
-export class AuthModule {}
+export class EncryptModule {}

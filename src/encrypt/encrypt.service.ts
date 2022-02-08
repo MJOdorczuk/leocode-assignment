@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { generateKeyPairSync, publicEncrypt } from 'crypto';
 import { readFileSync, unlinkSync, writeFileSync } from 'fs';
+import { RSA_NO_PADDING, RSA_PKCS1_PADDING } from 'constants';
 
 @Injectable()
 export class EncryptService {
@@ -28,6 +29,7 @@ export class EncryptService {
       writeFileSync("public_key", keyPair.publicKey);
       writeFileSync("private_key", keyPair.privateKey);
       user.pubKey = readFileSync("public_key", "utf8");
+      this.usersService.updateUser(user.email, user);
       const privKey = readFileSync("private_key", "utf8");
       unlinkSync("public_key");
       unlinkSync("private_key");
@@ -37,10 +39,18 @@ export class EncryptService {
   }
 
   async encryptFile(file: string, email: string){
-    const content = readFileSync(file, "base64");
-    return this.usersService
-        .findOne(email)
-        .then(user => publicEncrypt(user.pubKey, Buffer.from(content, "base64")), () => null)
-        .then(encrypted => encrypted.toString("base64"), () => null);
+    const content = Buffer.from(readFileSync(file, "base64"), "base64");
+    const user = await this.usersService.findOne(email);
+    if(user){
+      var chunks = [], i = 0, n = content.length;
+      while (i < n) {
+        // 2048 bits and string is base64 therefore chunks should be 32
+        chunks.push(content.slice(i, i += 32));
+      }
+      return chunks
+        .map(chunk => publicEncrypt({key: user.pubKey, padding: RSA_PKCS1_PADDING}, chunk).toString("base64"))
+        .join();
+    }
+    return null;
   }
 }

@@ -16,7 +16,8 @@ describe('UsersService', () => {
       email: Math.random().toString(36).slice(2) + '@mail.com',
       password: Math.random().toString(36).slice(2)
     };
-    service = new UsersService([realUser]);
+    service = new UsersService();
+    service.users = [realUser];
   });
 
   it('should find one', async () => {
@@ -28,4 +29,16 @@ describe('UsersService', () => {
     const result = await service.findOne(fakeUser.email);
     expect(result).toBeFalsy();
   });
+
+  it('should update user', async () => {
+    await service.updateUser(realUser.email, fakeUser);
+    expect(service.users.length).toEqual(1);
+    expect(service.users[0]).toEqual(fakeUser);
+  });
+
+  it('should not update fake user', async () => {
+    await service.updateUser(fakeUser.email, fakeUser);
+    expect(service.users.length).toEqual(1);
+    expect(service.users[0]).toEqual(realUser);
+  })
 });

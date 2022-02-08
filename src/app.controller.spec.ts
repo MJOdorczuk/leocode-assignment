@@ -53,6 +53,6 @@ describe('AppController', () => {
 
   it('should encrypt file', async () => {
     await appController.encrypt({user: realUser});
-    expect(encryptService.encryptFile).toBeCalledWith('../sample.pdf', realUser.email);
+    expect(encryptService.encryptFile).toBeCalledWith('sample.pdf', realUser.email);
   });
 });

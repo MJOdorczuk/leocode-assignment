@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { RSA_PKCS1_PADDING } from 'constants';
 import { privateDecrypt, publicEncrypt } from 'crypto';
 import { readFileSync, unlinkSync, writeFileSync } from 'fs';
 import { UsersService } from '../users/users.service';
@@ -39,11 +40,17 @@ describe('EncryptService', () => {
 
     service = module.get<EncryptService>(EncryptService);
     usersService = module.get<UsersService>(UsersService);
+    const realUserCall = () => realUser;
     jest.spyOn(usersService, "findOne").mockImplementation(async (email: string) => {
       if(email === realUser.email){
-        return realUser;
+        return realUserCall();
       }
       return null;
+    });
+    jest.spyOn(usersService, "updateUser").mockImplementation(async (email: string, update: any) => {
+      if(email === realUser.email){
+        realUser.pubKey = update.pubKey;
+      }
     });
   });
 
@@ -79,6 +86,7 @@ describe('EncryptService', () => {
       const decrypted = privateDecrypt({
         key: keys.privKey,
         passphrase: '',
+        padding: RSA_PKCS1_PADDING,
       }, Buffer.from(encrypted, "base64"));
       expect(decrypted.toString("base64")).toEqual(content);
   });

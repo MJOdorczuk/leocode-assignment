@@ -24,7 +24,7 @@ export class AppController {
 
   @UseGuards(JwtAuthGuard)
   @Post('api/encrypt')
-  encrypt(@Request() req) {
-    return this.encryptService.encryptFile("../sample.pdf" ,req.user.email);
+  async encrypt(@Request() req) {
+    return await this.encryptService.encryptFile("sample.pdf", req.user.email);
   }
 }
