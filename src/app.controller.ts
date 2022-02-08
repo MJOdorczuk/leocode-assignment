@@ -1,12 +1,14 @@
-import { Controller, Request, Post, UseGuards, Get } from '@nestjs/common';
+import { Controller, Request, Post, UseGuards } from '@nestjs/common';
 import { LocalAuthGuard } from './auth/local-auth.guard';
 import { AuthService } from './auth/auth.service';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
-import { Console } from 'console';
+import { EncryptService } from './encrypt/encrypt.service';
 
 @Controller()
 export class AppController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private encryptService: EncryptService) {}
 
   @UseGuards(LocalAuthGuard)
   @Post('api/sign-in')
@@ -17,6 +19,12 @@ export class AppController {
   @UseGuards(JwtAuthGuard)
   @Post('api/generate-key-pair')
   generateKeyPair(@Request() req) {
-    return this.authService.generateKeyPair(req.user);
+    return this.encryptService.generateKeyPair(req.user.email);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('api/encrypt')
+  encrypt(@Request() req) {
+    return this.encryptService.encryptFile("../sample.pdf" ,req.user.email);
   }
 }

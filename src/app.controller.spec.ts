@@ -1,27 +1,18 @@
-import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
-import { request } from 'http';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { AuthModule } from './auth/auth.module';
 import { AuthService } from './auth/auth.service';
-import { UsersService } from './users/users.service';
-var crypto = require("crypto");
+import { EncryptService } from './encrypt/encrypt.service';
 
-
-const realUser = {
-  email: Math.random().toString(36).slice(2) + '@mail.com',
-  password: Math.random().toString(36).slice(2)
-};
-
-const keys = {
-  privKey: Math.random().toString(36).slice(2),
-  pubKey: Math.random().toString(36).slice(2)
-};
+let realUser: { email: any; password: string; };
+let keys: { pubKey: any; privKey: string; };
+let fileContent: string;
 
 let authService: AuthService;
+let encryptService: EncryptService;
 
 jest.mock('./auth/auth.service');
+jest.mock('./encrypt/encrypt.service');
 
 describe('AppController', () => {
   let appController: AppController;
@@ -29,24 +20,39 @@ describe('AppController', () => {
   beforeEach(async () => {
     const app: TestingModule = await Test.createTestingModule({
       controllers: [AppController],
-      providers: [AppService, AuthService],
+      providers: [AppService, AuthService, EncryptService],
     }).compile();
+    realUser = {
+      email: Math.random().toString(36).slice(2) + '@mail.com',
+      password: Math.random().toString(36).slice(2)
+    };
+    keys = {
+      privKey: Math.random().toString(36).slice(2),
+      pubKey: Math.random().toString(36).slice(2)
+    };
+    fileContent = Math.random().toString(36).slice(2);
     authService = app.get<AuthService>(AuthService);
-    jest.spyOn(authService, 'login').mockImplementation(async (user: any) => user.email);
-    jest.spyOn(authService, 'generateKeyPair').mockImplementation(async (user: any) => keys);
+    encryptService = app.get<EncryptService>(EncryptService);
+
+    jest.spyOn(authService, 'login').mockImplementation(async () => null);
+    jest.spyOn(encryptService, 'generateKeyPair').mockImplementation(async () => null);
+    jest.spyOn(encryptService, 'encryptFile').mockImplementation(async () => null);
 
     appController = app.get<AppController>(AppController);
   });
 
   it(`should sign in`, async () => {
-    const email = await appController.signIn({user: realUser});
+    await appController.signIn({user: realUser});
     expect(authService.login).toHaveBeenCalledWith(realUser);
-    expect(email).toEqual(realUser.email);
   });
 
   it('should generate key pair', async () => {
-    const result = await appController.generateKeyPair({user: realUser});
-    expect(authService.generateKeyPair).toHaveBeenLastCalledWith(realUser);
-    expect(result).toEqual(keys);
+    await appController.generateKeyPair({user: realUser});
+    expect(encryptService.generateKeyPair).toHaveBeenLastCalledWith(realUser.email);
+  });
+
+  it('should encrypt file', async () => {
+    await appController.encrypt({user: realUser});
+    expect(encryptService.encryptFile).toBeCalledWith('../sample.pdf', realUser.email);
   });
 });
