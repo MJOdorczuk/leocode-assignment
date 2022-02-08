@@ -45,6 +45,11 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
+## Users
+
+email: 'john@jhn.jn', password: 'changeme'
+email: 'example@mail.com', password: 'guess'
+
 ## Test
 
 ```bash
