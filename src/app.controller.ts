@@ -1,4 +1,4 @@
-import { Controller, Request, Post, UseGuards } from '@nestjs/common';
+import { Controller, Request, Post, UseGuards, HttpException, HttpStatus } from '@nestjs/common';
 import { LocalAuthGuard } from './auth/local-auth.guard';
 import { AuthService } from './auth/auth.service';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
@@ -25,6 +25,10 @@ export class AppController {
   @UseGuards(JwtAuthGuard)
   @Post('api/encrypt')
   async encrypt(@Request() req) {
-    return await this.encryptService.encryptFile("sample.pdf", req.user.email);
+    const encrypted = await this.encryptService.encryptFile("sample.pdf", req.user.email);
+    if(!encrypted){
+      throw new HttpException('No encryption key generated yet', HttpStatus.FORBIDDEN);
+    }
+    return encrypted;
   }
 }
