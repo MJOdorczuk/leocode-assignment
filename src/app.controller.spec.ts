@@ -1,3 +1,4 @@
+import { HttpException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -7,6 +8,7 @@ import { EncryptService } from './encrypt/encrypt.service';
 let realUser: { email: any; password: string; };
 let keys: { pubKey: any; privKey: string; };
 let fileContent: string;
+let encrypted: string;
 
 let authService: AuthService;
 let encryptService: EncryptService;
@@ -31,6 +33,7 @@ describe('AppController', () => {
       pubKey: Math.random().toString(36).slice(2)
     };
     fileContent = Math.random().toString(36).slice(2);
+    encrypted = Math.random().toString(36).slice(2);
     authService = app.get<AuthService>(AuthService);
     encryptService = app.get<EncryptService>(EncryptService);
 
@@ -52,7 +55,19 @@ describe('AppController', () => {
   });
 
   it('should encrypt file', async () => {
+    jest.spyOn(encryptService, 'encryptFile').mockImplementation(async () => encrypted);
     await appController.encrypt({user: realUser});
     expect(encryptService.encryptFile).toBeCalledWith('sample.pdf', realUser.email);
   });
+
+  it('should throw exception when encryption failed', async () => {
+    try {
+      await appController.encrypt({user: realUser});
+    } catch (error) {
+      expect(error).toBeInstanceOf(HttpException);
+      expect(error.message).toEqual('No encryption key generated yet');
+      return;
+    }
+    fail('should throw exception');
+  })
 });

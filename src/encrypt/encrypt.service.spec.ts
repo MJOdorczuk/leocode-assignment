@@ -94,5 +94,10 @@ describe('EncryptService', () => {
   it('should not encrypt file for fake user', async () => {
     const encrypted = await service.encryptFile(file, fakeUser.email);
     expect(encrypted).toBeFalsy();
-  })
+  });
+
+  it('should not encrypt file when key is missing', async () => {
+    const encrypted = await service.encryptFile(file, realUser.email);
+    expect(encrypted).toBeFalsy();
+  });
 });
